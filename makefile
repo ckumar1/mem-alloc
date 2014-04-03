@@ -10,4 +10,4 @@ mtest: mem.so mem_test.c
 	gcc -lmem -L. -o mtest mem_test.c -Wall -Werror
 
 clean:
-	rm -f mtest mem.so mem.o
+	rm -f mtest libmem.so mem.o
