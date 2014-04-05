@@ -68,6 +68,7 @@ int Mem_Init(int sizeOfRegion)
 	head->prev = NULL;
 	head->used = false;
 
+	printf("Free Space: %i\n", head->size);
 	
 	puts("Mem_Init Ending.");
 
