@@ -4,10 +4,22 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <stdbool.h>
 
 int m_error;
 
 static int m_init_flag = 0;
+
+
+typedef struct page_t { 
+	void* start;
+	int size; 
+	void* next;
+	void* prev;
+	bool used;
+} page_t;
+
+page_t* head;
 
 int Mem_Init(int sizeOfRegion) 
 {
@@ -40,12 +52,22 @@ int Mem_Init(int sizeOfRegion)
 	
 	// open the /dev/zero device
 	int fd = open("/dev/zero", O_RDWR);
+	
 	// roundedSize (in bytes) is evenly divisible by the page size
-	void *ptr = mmap(NULL, roundedSize, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-	if (ptr == MAP_FAILED) { perror("mmap"); exit(1); }
+	head = mmap(NULL, roundedSize, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+	
+	if (head == MAP_FAILED) { perror("mmap"); exit(1); }
 	// close the device (don't worry, mapping should be unaffected)
 	close(fd);
-	return 0;	
+
+
+	// Initialize fields of head free list
+	head->size = roundedSize;
+	head->start = &head; // could be incorrect and need to be removed
+	head->next = NULL;
+	head->prev = NULL;
+	head->used = false;
+
 	
 	puts("Mem_Init Ending.");
 
