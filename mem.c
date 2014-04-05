@@ -9,6 +9,9 @@ static int m_init_flag = 0;
 
 int Mem_Init(int sizeOfRegion) 
 {
+	// TODO make sure there is enough memory for the free list and other data structs
+
+
 	puts("Mem_Init starts...\n");
 	printf("Requested Size: %d\n", sizeOfRegion);
 
@@ -33,7 +36,14 @@ int Mem_Init(int sizeOfRegion)
 
 	printf("Rounded Size: %d\n", roundedSize );	
 	
-	
+	// open the /dev/zero device
+	int fd = open("/dev/zero", O_RDWR);
+	// roundedSize (in bytes) is evenly divisible by the page size
+	void *ptr = mmap(NULL, roundedSize, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+	if (ptr == MAP_FAILED) { perror("mmap"); exit(1); }
+	// close the device (don't worry, mapping should be unaffected)
+	close(fd);
+	return 0;	
 	
 	puts("Mem_Init Ending.");
 
