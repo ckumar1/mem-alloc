@@ -1,7 +1,7 @@
 #include "mem.h"
 #include <stdio.h>
 #include <unistd.h>
-
+#include <sys/mman.h>
 
 int m_error;
 
