@@ -69,4 +69,5 @@ publish
 
 # Executables to ignore
 mtest
+mtest.dSYM
 tags

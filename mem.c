@@ -11,19 +11,21 @@ int m_error;
 static int m_init_flag = 0;
 
 
-typedef struct page_t { 
-	void* start;
+typedef struct node_t {
 	int size; 
 	void* next;
-	void* prev;
 	bool used;
 } page_t;
 
 page_t* head;
 
+// TODO needs to be fixed so 4096 doesn't allocate
+//  Should have enough space for our data structures on top of requested data
 int alignPage(int sizeOfRegion) {
 	// Round up the requested size of region to the nearest page size
 	int pageSize = getpagesize();
+
+    // Note: if partialSpace==0, function still rounds up to the next page by adding 4096
 	int partialSpace = sizeOfRegion % pageSize;
 	int addedSpace = pageSize - partialSpace;
 	int roundedSize = sizeOfRegion + addedSpace;
@@ -70,9 +72,7 @@ int Mem_Init(int sizeOfRegion)
 
 	// Initialize fields of head free list
 	head->size = roundedSize; // TODO need to take into account size of header
-	head->start = &head; // TEST could be incorrect and need to be removed
 	head->next = NULL;
-	head->prev = NULL;
 	head->used = false;
 
 	printf("Free Space: %i\n", head->size); // TEST output
