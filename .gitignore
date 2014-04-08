@@ -49,6 +49,7 @@ Thumbs.db
 nbproject
 *.sublime-project
 *.sublime-workspace
+*.cproject
  
 # Dreamweaver added files
 _notes
@@ -65,6 +66,6 @@ dwsync.xml
 intermediate
 publish
 .idea
-mem_test
 
+# Executables to ignore
 mtest
