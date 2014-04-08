@@ -65,15 +65,17 @@ int Mem_Init(int sizeOfRegion)
 	m_init_flag = 1;
 
 	
-	// Round up the requested size of region to the nearest page size
-	int roundedSize = alignPage(sizeOfRegion);
-	printf("Rounded Size: %d\n", roundedSize ); // TEST output
+	// TODO align the requested bytes to the given # of bytes 
+	size_t alignedSize = alignPage(sizeOfRegion);
+	printf("Rounded Size: %d\n", alignedSize ); // TEST output
 	
+
+
 	// open the /dev/zero device
 	int fd = open("/dev/zero", O_RDWR);
 	
 	// roundedSize (in bytes) is evenly divisible by the page size
-	head = mmap(NULL, roundedSize, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+	head = mmap(NULL, alignedSize, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
 	
 	if (head == MAP_FAILED) { perror("mmap"); exit(1); }
 	// close the device (don't worry, mapping should be unaffected)
@@ -81,7 +83,7 @@ int Mem_Init(int sizeOfRegion)
 
 
 	// Initialize fields of head free list
-	head->size = roundedSize; // TODO need to take into account size of header
+	head->size = alignedSize; // TODO need to take into account size of header
 	head->next = NULL;
 
 	printf("Free Space: %i\n", head->size); // TEST output
