@@ -29,22 +29,21 @@ node_t* head; // pointer to the head of the free list
 
 /* Helper Functions */
 
-// TODO needs to be fixed so 4096 doesn't allocate
+// TODO maybe needs to be fixed so 4096 doesn't allocate a new page?
 //  Should have enough space for our data structures on top of requested data
-int alignPage(int sizeOfRegion) {
-	// Round up the requested size of region to the nearest page size
-	int pageSize = getpagesize();
+int align(size_t size, unsigned int alignment ) {
+	// Round up the requested size to the next highest multiple of alignment
 
-    // Note: if partialSpace==0, function still rounds up to the next page by adding 4096
-	int partialSpace = sizeOfRegion % pageSize;
-	int addedSpace = pageSize - partialSpace;
-	int roundedSize = sizeOfRegion + addedSpace;
-	return roundedSize;
+	// Note: if partialSpace==0, function still rounds up to the next page by adding 4096
+    int partialSpace = size % alignment;
+	int addedSpace = alignment - partialSpace;
+
+	int alignedSize = size + addedSpace;
+	return alignedSize;
 }
 
 int Mem_Init(int sizeOfRegion) 
 {
-	// TODO make sure there is enough memory for the free list and other data structs
 
 
 	puts("Mem_Init starts...\n");
@@ -64,10 +63,11 @@ int Mem_Init(int sizeOfRegion)
 	// set init flag to prevent Mem_Init from being run again
 	m_init_flag = 1;
 
+	// TODO make sure there is enough memory for the free list and other data structs
 	
-	// TODO align the requested bytes to the given # of bytes 
-	size_t alignedSize = alignPage(sizeOfRegion);
-	printf("Rounded Size: %d\n", alignedSize ); // TEST output
+	// Round up the requested size of region to the nearest page size
+	size_t alignedSize = align(sizeOfRegion, getpagesize());
+	printf("Aligned Size: %u\n", (unsigned int) alignedSize ); // TEST output
 	
 
 
