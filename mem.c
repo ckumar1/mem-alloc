@@ -40,6 +40,23 @@ size_t align(size_t size, size_t alignment) {
 	return alignedSize;
 }
 
+/* initHeader(header_t *, size_t)
+ *
+ * initialize header fields
+ * returns the size of header
+ */
+void * initHeader(header_t * header, size_t allocSize) {
+	// Initialize Header fields
+	header->size = allocSize;
+	return sizeof(header_t);
+}
+
+// TODO Search for free space
+void * findBestfitChunk(size_t size) {
+	void * bfChunk = NULL;
+
+	return bfChunk;
+}
 
 /* bestfitChunk(size_t size)
  *
@@ -48,11 +65,9 @@ size_t align(size_t size, size_t alignment) {
  * returns NULL on failure
  */
 void * bestfitChunk(size_t size) {
-	void * ptr = NULL;
-
-	// TODO Search for free space
-	// TODO if found, set header and *ptr; else return NULL
-
+	void * ptr = findBestfitChunk(size);// returns a pointer to the head of the split free chunk if found; else NULL
+	if (ptr)
+		ptr += initHeader(ptr, size);// ptr should now point to the beginning of the allocated memory
 	return ptr;
 }
 
@@ -72,7 +87,6 @@ void * bestfitFor(size_t size) {
 	}
 	return (ptr);
 }
-
 
 int Mem_Init(int sizeOfRegion) {
 
