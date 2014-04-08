@@ -63,10 +63,13 @@ int Mem_Init(int sizeOfRegion)
 	// set init flag to prevent Mem_Init from being run again
 	m_init_flag = 1;
 
-	// TODO make sure there is enough memory for the free list and other data structs
+	// Make sure there is enough memory for the free list
+	size_t heapSize = sizeOfRegion + sizeof (node_t);
 	
-	// Round up the requested size of region to the nearest page size
-	size_t alignedSize = align(sizeOfRegion, getpagesize());
+	printf("Free list Node Size: %u\n", (unsigned int) sizeof(node_t)); // TEST output
+
+	// Align the requested heap size to the nearest page size
+	size_t alignedSize = align(heapSize, getpagesize());
 	printf("Aligned Size: %u\n", (unsigned int) alignedSize ); // TEST output
 	
 
