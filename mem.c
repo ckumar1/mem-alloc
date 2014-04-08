@@ -6,18 +6,28 @@
 #include <sys/mman.h>
 #include <stdbool.h>
 
+
+/* Global Variables */
+
 int m_error;
 
 static int m_init_flag = 0;
 
-
+// Node of the free list
 typedef struct node_t {
-	int size; 
+	int size;
 	void* next;
-	bool used;
-} page_t;
+} node_t;
 
-page_t* head;
+// Header for an allocated block
+typedef struct header_t {
+	int size; 
+} header_t;
+
+node_t* head; // pointer to the head of the free list
+
+
+/* Helper Functions */
 
 // TODO needs to be fixed so 4096 doesn't allocate
 //  Should have enough space for our data structures on top of requested data
@@ -73,7 +83,6 @@ int Mem_Init(int sizeOfRegion)
 	// Initialize fields of head free list
 	head->size = roundedSize; // TODO need to take into account size of header
 	head->next = NULL;
-	head->used = false;
 
 	printf("Free Space: %i\n", head->size); // TEST output
 	
