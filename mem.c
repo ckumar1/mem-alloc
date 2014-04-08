@@ -41,8 +41,10 @@ int Mem_Init(int sizeOfRegion)
 	// check for errors
 	if ( m_init_flag != 0 || sizeOfRegion <= 0)
 	{
-		puts("Bad arguments for Mem_Init!\n\nEither already been run once or sizeOfRegion was not above zero");
-		// set m_error for bad args
+		// TEST output
+		puts("Bad arguments for Mem_Init!\n\n\
+		Either already been run once or sizeOfRegion was not above zero");
+
 		m_error = E_BAD_ARGS;
 		return (-1);
 	}
@@ -53,7 +55,7 @@ int Mem_Init(int sizeOfRegion)
 	
 	// Round up the requested size of region to the nearest page size
 	int roundedSize = alignPage(sizeOfRegion);
-	printf("Rounded Size: %d\n", roundedSize );	
+	printf("Rounded Size: %d\n", roundedSize ); // TEST output
 	
 	// open the /dev/zero device
 	int fd = open("/dev/zero", O_RDWR);
@@ -67,15 +69,15 @@ int Mem_Init(int sizeOfRegion)
 
 
 	// Initialize fields of head free list
-	head->size = roundedSize;
-	head->start = &head; // could be incorrect and need to be removed
+	head->size = roundedSize; // TODO need to take into account size of header
+	head->start = &head; // TEST could be incorrect and need to be removed
 	head->next = NULL;
 	head->prev = NULL;
 	head->used = false;
 
-	printf("Free Space: %i\n", head->size);
+	printf("Free Space: %i\n", head->size); // TEST output
 	
-	puts("Mem_Init Ending.");
+	puts("Mem_Init Ending."); //TEST output
 
 	// return 0 on success
 	return (0);
@@ -83,8 +85,12 @@ int Mem_Init(int sizeOfRegion)
 
 void *Mem_Alloc(int size)
 {
-
-	return (0);
+	// TODO Align size to 8 byte chunks
+	// TODO Check if bestfit() can find space for requested size
+	// TODO On success, returns void* ptr to the start of the requested space 
+	// 		(&alloc_block + sizeof(header))
+	void* ptr = head; 
+	return (ptr);
 }
 
 int Mem_Free(void *ptr) {
