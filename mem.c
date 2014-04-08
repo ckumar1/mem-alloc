@@ -21,6 +21,15 @@ typedef struct page_t {
 
 page_t* head;
 
+int alignPage(int sizeOfRegion) {
+	// Round up the requested size of region to the nearest page size
+	int pageSize = getpagesize();
+	int partialSpace = sizeOfRegion % pageSize;
+	int addedSpace = pageSize - partialSpace;
+	int roundedSize = sizeOfRegion + addedSpace;
+	return roundedSize;
+}
+
 int Mem_Init(int sizeOfRegion) 
 {
 	// TODO make sure there is enough memory for the free list and other data structs
@@ -43,11 +52,7 @@ int Mem_Init(int sizeOfRegion)
 
 	
 	// Round up the requested size of region to the nearest page size
-	int pageSize = getpagesize();
-	int partialSpace = sizeOfRegion % pageSize;
-	int addedSpace = pageSize  - partialSpace;
-	int roundedSize = sizeOfRegion + addedSpace;
-
+	int roundedSize = alignPage(sizeOfRegion);
 	printf("Rounded Size: %d\n", roundedSize );	
 	
 	// open the /dev/zero device
