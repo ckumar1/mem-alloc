@@ -83,7 +83,7 @@ void * findBestfitChunk(size_t requestedSize) {
 
 	if (bestfit) // Split node with 8bit alignment if bestfit exists
 
-		freeSplitNode = (node_t *) &bestfit + requestedSize;
+		freeSplitNode = (void *) bestfit + requestedSize;
 		// Calculate the new size of the split free node
 		freeSplitNode->size = bestfit->size - requestedSize;
 		// set pointers as appropriate
