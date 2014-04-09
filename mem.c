@@ -20,12 +20,12 @@ typedef struct node_t {
 
 } node_t;
 
-
 // Header for an allocated block
 typedef struct header_t {
 	int size;
 } header_t;
 
+size_t maxHeapSize;
 node_t* head; // pointer to the head of the free list
 
 /* Helper Functions */
@@ -82,18 +82,17 @@ void * findBestfitChunk(size_t requestedSize) {
 	} // end_FOR
 
 	if (bestfit) // Split node with 8bit alignment if bestfit exists
-
+		// FIXME error due to requested size plus sizeof Header is greater than available heap
 		freeSplitNode = (void *) bestfit + requestedSize;
-		// Calculate the new size of the split free node
-		freeSplitNode->size = bestfit->size - requestedSize;
-		// set pointers as appropriate
-		freeSplitNode->next = bestfit->next;
-		freeSplitNode->prev = bestfit->prev;
+	// Calculate the new size of the split free node
+	freeSplitNode->size = bestfit->size - requestedSize;
+	// set pointers as appropriate
+	freeSplitNode->next = bestfit->next;
+	freeSplitNode->prev = bestfit->prev;
 
-
-		if (freeSplitNode->prev) {
-			// Set previous node's next ptr to the newly split node's address
-			freeSplitNode->prev->next = (node_t*) freeSplitNode;
+	if (freeSplitNode->prev) {
+		// Set previous node's next ptr to the newly split node's address
+		freeSplitNode->prev->next = (node_t*) freeSplitNode;
 	} else {
 		// no previous node means bestfit was the head ptr
 		// update head ptr to new split address
@@ -151,12 +150,12 @@ int Mem_Init(int sizeOfRegion) {
 	m_init_flag = 1;
 
 	// Make sure there is enough memory for the free list
-	size_t heapSize = sizeOfRegion + sizeof(node_t);
+	maxHeapSize = sizeOfRegion;		// + sizeof(node_t);
 
 	printf("Free list Node Size: %u\n", (unsigned int) sizeof(node_t)); // TEST output
 
 	// Align the requested heap size to the nearest page size
-	size_t alignedSize = align(heapSize, getpagesize());
+	size_t alignedSize = align(maxHeapSize, getpagesize());
 	printf("Aligned Size: %u\n", (unsigned int) alignedSize); // TEST output
 
 	// open the /dev/zero device
@@ -200,13 +199,13 @@ int Mem_Free(void *ptr) {
 	header_t* alloc_header = (void *) ptr - sizeof(header_t);
 	size_t freed_size = alloc_header->size;
 	node_t *freed_blk = (node_t*) &alloc_header;
-	 freed_blk->size = freed_size + sizeof(header_t);
-	 // add freed block to free list after head
-	 freed_blk->next = head->next;
-	 freed_blk->prev = head;
-	 // TODO reassign pointers to add freed_blk back to the free list
-	 head->next = head->next->prev = freed_blk;
-	 // FIXME: coalesce! (requires adding footers, too)
+	freed_blk->size = freed_size + sizeof(header_t);
+	// add freed block to free list after head
+	freed_blk->next = head->next;
+	freed_blk->prev = head;
+	// TODO reassign pointers to add freed_blk back to the free list
+	head->next = head->next->prev = freed_blk;
+	// FIXME: coalesce! (requires adding footers, too)
 	return (0);
 }
 
