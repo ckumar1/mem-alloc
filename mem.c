@@ -195,7 +195,7 @@ void *Mem_Alloc(int size) {
 }
 
 int Mem_Free(void *ptr) {
-	// TODO implement mem_free
+	// TODO finish implementing mem_free
 	header_t *alloc_header = (void *) ptr - sizeof header_t;
 	size_t freed_size = alloc_header->size;
 	node_t *freed_blk = &alloc_header;
@@ -203,7 +203,7 @@ int Mem_Free(void *ptr) {
 	 // add freed block to free list after head
 	 freed_blk->next = head->next;
 	 freed_blk->prev = head;
-	 // reassign pointers to add freed_blk back to the free list
+	 // TODO reassign pointers to add freed_blk back to the free list
 	 head->next = head->next->prev = freed_blk;
 	 // FIXME: coalesce! (requires adding footers, too)
 	return (0);
