@@ -172,9 +172,10 @@ int Mem_Init(int sizeOfRegion) {
 	// close the device (don't worry, mapping should be unaffected)
 	close(fd);
 
-	// Initialize fields of head free list
+	// Initialize fields of head freelist node
 	head->size = alignedSize;
 	head->next = NULL;
+	head->prev = NULL;
 
 	printf("Free Space: %i\n", head->size); // TEST output
 
