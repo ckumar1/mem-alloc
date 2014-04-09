@@ -54,7 +54,7 @@ size_t initHeader(header_t * header, size_t allocSize) {
 	return sizeof(header_t);
 }
 
-void* split_free_node(size_t requestedSize, node_t* freeSplitNode,
+void split_free_node(size_t requestedSize, node_t* freeSplitNode,
 		node_t* bestfit) {
 	// Split node with 8bit alignment if bestfit exists
 	// FIXME error due to requested size plus sizeof Header is greater than available heap
