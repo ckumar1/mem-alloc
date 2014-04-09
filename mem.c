@@ -78,23 +78,22 @@ void * findBestfitChunk(size_t requestedSize) {
 	} // end_FOR
 
 	if (bestfit) // Split node with 8bit alignment if bestfit exists
-	
-		node_t* freeSplitNode = (node_t *) bestfit + requestedSize;
-		// Calculate the new size of the split free node
-		freeSplitNode->size = bestfit->size - requestedSize;
-		// set pointers as appropriate
-		freeSplitNode->next = bestfit->next;
-		freeSplitNode->prev = bestfit->prev;
 
-		if (freeSplitNode->prev)
-		{
-			// Set previous node's next ptr to the newly split node's address
-			freeSplitNode->prev->next = @freelistNode
-		} else { // no previous node means bestfit was the head ptr
-			// update head ptr to new split address
-			head = &freeSplitNode;
-		}
-	
+		node_t* freeSplitNode = (node_t *) bestfit + requestedSize;
+	// Calculate the new size of the split free node
+	freeSplitNode->size = bestfit->size - requestedSize;
+	// set pointers as appropriate
+	freeSplitNode->next = bestfit->next;
+	freeSplitNode->prev = bestfit->prev;
+
+	if (freeSplitNode->prev) {
+		// Set previous node's next ptr to the newly split node's address
+		freeSplitNode->prev->next = @freelistNode
+	} else { // no previous node means bestfit was the head ptr
+		// update head ptr to new split address
+		head = &freeSplitNode;
+	}
+
 	// return the address of the new block
 	return (void*) bestfit;
 
@@ -109,8 +108,8 @@ void * bestfitChunk(size_t size) {
 	header_t* bestfitHeader = (header_t*) findBestfitChunk(size);
 	if (bestfitHeader)
 		// init Header returns size of header to convert header addr to the start address of allocated memory
-		bestfitHeader = (void *) (bestfitHeader + 
-				initHeader(bestfitHeader, size) );
+		bestfitHeader = (void *) (bestfitHeader
+				+ initHeader(bestfitHeader, size));
 
 	return (bestfitHeader);
 }
