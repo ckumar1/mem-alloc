@@ -16,7 +16,10 @@ static int m_init_flag = 0;
 typedef struct node_t {
 	int size;
 	struct node_t* next;
+	struct node_t* prev;
+
 } node_t;
+
 
 // Header for an allocated block
 typedef struct header_t {
@@ -63,6 +66,7 @@ void * findBestfitChunk(size_t requestedSize) {
 	// Store a pointer to the head of the list
 	node_t * freeNode = head;
 	node_t * bestfit = NULL;
+	node_t* freeSplitNode = NULL;
 
 	for (; freeNode != NULL; freeNode = freeNode->next) {
 
@@ -79,19 +83,21 @@ void * findBestfitChunk(size_t requestedSize) {
 
 	if (bestfit) // Split node with 8bit alignment if bestfit exists
 
-		node_t* freeSplitNode = (node_t *) bestfit + requestedSize;
-	// Calculate the new size of the split free node
-	freeSplitNode->size = bestfit->size - requestedSize;
-	// set pointers as appropriate
-	freeSplitNode->next = bestfit->next;
-	freeSplitNode->prev = bestfit->prev;
+		freeSplitNode = (node_t *) &bestfit + requestedSize;
+		// Calculate the new size of the split free node
+		freeSplitNode->size = bestfit->size - requestedSize;
+		// set pointers as appropriate
+		freeSplitNode->next = bestfit->next;
+		freeSplitNode->prev = bestfit->prev;
 
-	if (freeSplitNode->prev) {
-		// Set previous node's next ptr to the newly split node's address
-		freeSplitNode->prev->next = @freelistNode
-	} else { // no previous node means bestfit was the head ptr
+
+		if (freeSplitNode->prev) {
+			// Set previous node's next ptr to the newly split node's address
+			freeSplitNode->prev->next = (node_t*) freeSplitNode;
+	} else {
+		// no previous node means bestfit was the head ptr
 		// update head ptr to new split address
-		head = &freeSplitNode;
+		head = (node_t*) freeSplitNode;
 	}
 
 	// return the address of the new block
@@ -109,7 +115,7 @@ void * bestfitChunk(size_t size) {
 	if (bestfitHeader)
 		// init Header returns size of header to convert header addr to the start address of allocated memory
 		bestfitHeader = (void *) (bestfitHeader
-				+ initHeader(bestfitHeader, size));
+				+ initHeader(bestfitHeader, size - sizeof(header_t)));
 
 	return (bestfitHeader);
 }
