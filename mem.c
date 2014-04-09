@@ -196,10 +196,10 @@ void *Mem_Alloc(int size) {
 
 int Mem_Free(void *ptr) {
 	// TODO finish implementing mem_free
-	header_t *alloc_header = (void *) ptr - sizeof header_t;
+	header_t* alloc_header = (void *) ptr - sizeof(header_t);
 	size_t freed_size = alloc_header->size;
-	node_t *freed_blk = &alloc_header;
-	 freed_blk->size = freed_size + sizeof header_t;
+	node_t *freed_blk = (node_t*) &alloc_header;
+	 freed_blk->size = freed_size + sizeof(header_t);
 	 // add freed block to free list after head
 	 freed_blk->next = head->next;
 	 freed_blk->prev = head;
