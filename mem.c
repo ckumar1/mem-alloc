@@ -45,30 +45,44 @@ size_t align(size_t size, size_t alignment) {
  * initialize header fields
  * returns the size of header
  */
-void * initHeader(header_t * header, size_t allocSize) {
+size_t initHeader(header_t * header, size_t allocSize) {
 	// Initialize Header fields
 	header->size = allocSize;
 	return sizeof(header_t);
 }
 
 // TODO Search for free space
-void * findBestfitChunk(size_t size) {
-	void * bfChunk = NULL;
+/* findBestfitChunk(size_t)
+ * 
+ * Use the Bestfit strategy to find the min(|n| n->size > size) 
+ * Return the best node on success
+ * Returns NULL on failure (no node is big enough to alloc size)
+ */
+node_t * findBestfitChunk(size_t requestedSize) {
 
-	return bfChunk;
+	// Store a pointer to the head of the list
+	node_t * freeBlock = head;
+	node_t * bestfit = head;
+	
+	if (freeBlock->size > requestedSize && freeBlock->size < bestfit->size) {
+		bestfit = freeBlock;
+	}
+	
+	return bestfit;
 }
 
 /* bestfitChunk(size_t size)
- *
  * Searches for a free chunk in the free list that can fit size
- * returns address to requested space on success
+ * returns a pointer to the allocated space if found;
  * returns NULL on failure
  */
 void * bestfitChunk(size_t size) {
-	void * ptr = findBestfitChunk(size);// returns a pointer to the head of the split free chunk if found; else NULL
-	if (ptr)
-		ptr += initHeader(ptr, size);// ptr should now point to the beginning of the allocated memory
-	return ptr;
+	void * bfChunk = findBestfitChunk(size);
+	if (bfChunk)
+		// set bfChunk to the start address of allocated memory
+		bfChunk = (void *) (bfChunk + initHeader(bfChunk, size));
+
+	return (bfChunk);
 }
 
 /*
