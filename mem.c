@@ -223,8 +223,8 @@ int Mem_Free(void *ptr) {
 	// Convert allocated block into a free block
 	node_t *freed_blk = (node_t*) &alloc_header;
 	freed_blk->size = freed_size + sizeof(header_t);
-	head->next = NULL;
-	head->prev = NULL;
+	freed_blk->next = NULL;
+	freed_blk->prev = NULL;
 
 	// Reassign pointers to add freed_blk back to the free list
 
