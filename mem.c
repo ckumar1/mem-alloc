@@ -56,19 +56,22 @@ size_t initHeader(header_t * header, size_t allocSize) {
 
 void split_free_node(size_t requestedSize, node_t* freeSplitNode,
 		node_t* bestfit) {
-	// Split node with 8bit alignment if bestfit exists
-	// FIXME error due to requested size plus sizeof Header is greater than available heap
-	freeSplitNode = (void*) bestfit + requestedSize;
 	
 	// TODO store bestfit fields in local vars
 	// then set freeSplitNode accordingly.
+	size_t bfChunkSize = bestfit->size;
+	node_t * bfNextNode = bestfit->next;
+	node_t * bfPrevNode = bestfit->prev;
 	
+	// Split node with 8bit alignment if bestfit exists
+	// FIXME bestfit is getting corrupted before we are done reading from it
+	freeSplitNode = (void*) bestfit + requestedSize;
 
 	// Calculate the new size of the split free node
-	freeSplitNode->size = bestfit->size - requestedSize;
+	freeSplitNode->size = bfChunkSize - requestedSize;
 	// set pointers as appropriate
-	freeSplitNode->next = bestfit->next;
-	freeSplitNode->prev = bestfit->prev;
+	freeSplitNode->next = bfNextNode;
+	freeSplitNode->prev = bfPrevNode;
 
 
 	if (freeSplitNode->prev) {
@@ -190,7 +193,7 @@ int Mem_Init(int sizeOfRegion) {
 	head->next = NULL;
 	head->prev = NULL;
 
-	printf("Free Space: %i\n", head->size); // TEST output
+	printf("Free Space: %zu\n", head->size); // TEST output
 
 	puts("Mem_Init Ending."); //TEST output
 
