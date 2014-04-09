@@ -51,19 +51,18 @@ size_t initHeader(header_t * header, size_t allocSize) {
 	return sizeof(header_t);
 }
 
-// TODO Search for free space
+// Search for free space
 /* findBestfitChunk(size_t)
  * 
  * Use the Bestfit strategy to find the min(|n| n->size > size) 
  * Return the best node on success
  * Returns NULL on failure (no node is big enough to alloc size)
  */
-node_t * findBestfitChunk(size_t requestedSize) {
+void * findBestfitChunk(size_t requestedSize) {
 
 	// Store a pointer to the head of the list
 	node_t * freelistNode = head;
 	node_t * bestfit = NULL;
-
 
 	for (; freelistNode != NULL; freelistNode = freelistNode->next) {
 
@@ -78,106 +77,104 @@ node_t * findBestfitChunk(size_t requestedSize) {
 
 	} // end_FOR
 
-	return bestfit;
+	return (void*) bestfit;
 
 }
 
+/* bestfitChunk(size_t size)
+ * Searches for a free chunk in the free list that can fit size
+ * returns a pointer to the allocated space if found;
+ * returns NULL on failure
+ */
+void * bestfitChunk(size_t size) {
+	header_t* bestfitHeader = (header_t*) findBestfitChunk(size);
+	if (bestfitHeader)
+		// init Header set bfChunk to the start address of allocated memory
+		bestfitHeader = (void *) (bestfitHeader
+				+ initHeader(bestfitHeader, size));
 
-	/* bestfitChunk(size_t size)
-	 * Searches for a free chunk in the free list that can fit size
-	 * returns a pointer to the allocated space if found;
-	 * returns NULL on failure
-	 */
-	void * bestfitChunk(size_t size) {
-		void * bfChunk = findBestfitChunk(size);
-		if (bfChunk)
-			// set bfChunk to the start address of allocated memory
-			bfChunk = (void *) (bfChunk + initHeader(bfChunk, size));
+	return (bestfitHeader);
+}
 
-		return (bfChunk);
+/*
+ *  Check if there is enough free space to satisfy requested size
+ * if found, sets header and splits free chunk
+ * On Success, returns void* ptr to the start of the requested spaced
+ * On Failure, returns NULL
+ */
+void * bestfitFor(size_t size) {
+
+	void* ptr = bestfitChunk(size);
+
+	if (ptr == NULL) {
+		m_error = E_NO_SPACE;
+	}
+	return (ptr);
+}
+
+int Mem_Init(int sizeOfRegion) {
+
+	puts("Mem_Init starts...\n");
+	printf("Requested Size: %d\n", sizeOfRegion);
+
+	// check for invalid args and attempts to run multiple times
+	if (m_init_flag != 0 || sizeOfRegion <= 0) {
+		m_error = E_BAD_ARGS;
+		return (-1);
 	}
 
-	/*
-	 *  Check if there is enough free space to satisfy requested size
-	 * if found, sets header and splits free chunk
-	 * On Success, returns void* ptr to the start of the requested spaced
-	 * On Failure, returns NULL
-	 */
-	void * bestfitFor(size_t size) {
+	// set init flag to prevent Mem_Init from being run again
+	m_init_flag = 1;
 
-		void* ptr = bestfitChunk(size);
+	// Make sure there is enough memory for the free list
+	size_t heapSize = sizeOfRegion + sizeof(node_t);
 
-		// Set m_error inside bestfitFor
-		if (ptr == NULL) {
-			m_error = E_NO_SPACE;
-		}
-		return (ptr);
+	printf("Free list Node Size: %u\n", (unsigned int) sizeof(node_t)); // TEST output
+
+	// Align the requested heap size to the nearest page size
+	size_t alignedSize = align(heapSize, getpagesize());
+	printf("Aligned Size: %u\n", (unsigned int) alignedSize); // TEST output
+
+	// open the /dev/zero device
+	int fd = open("/dev/zero", O_RDWR);
+
+	// roundedSize (in bytes) is evenly divisible by the page size
+	head = mmap(NULL, alignedSize, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+
+	if (head == MAP_FAILED) {
+		perror("mmap");
+		exit(1);
 	}
+	// close the device (don't worry, mapping should be unaffected)
+	close(fd);
 
-	int Mem_Init(int sizeOfRegion) {
+	// Initialize fields of head free list
+	head->size = alignedSize;
+	head->next = NULL;
 
-		puts("Mem_Init starts...\n");
-		printf("Requested Size: %d\n", sizeOfRegion);
+	printf("Free Space: %i\n", head->size); // TEST output
 
-		// check for invalid args and attempts to run multiple times
-		if (m_init_flag != 0 || sizeOfRegion <= 0) {
-			m_error = E_BAD_ARGS;
-			return (-1);
-		}
+	puts("Mem_Init Ending."); //TEST output
 
-		// set init flag to prevent Mem_Init from being run again
-		m_init_flag = 1;
+	// return 0 on success
+	return (0);
+}
 
-		// Make sure there is enough memory for the free list
-		size_t heapSize = sizeOfRegion + sizeof(node_t);
+void *Mem_Alloc(int size) {
 
-		printf("Free list Node Size: %u\n", (unsigned int) sizeof(node_t)); // TEST output
+	// Total allocated size is requestedSize + sizeof(header)
+	size_t allocSize = size + sizeof(header_t);
+	// Align size to 8 byte chunks
+	size_t alignedAllocSize = align(allocSize, 8);
 
-		// Align the requested heap size to the nearest page size
-		size_t alignedSize = align(heapSize, getpagesize());
-		printf("Aligned Size: %u\n", (unsigned int) alignedSize); // TEST output
+	return bestfitFor(alignedAllocSize);
+}
 
-		// open the /dev/zero device
-		int fd = open("/dev/zero", O_RDWR);
+int Mem_Free(void *ptr) {
 
-		// roundedSize (in bytes) is evenly divisible by the page size
-		head = mmap(NULL, alignedSize, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd,
-				0);
+	return (0);
+}
 
-		if (head == MAP_FAILED) {
-			perror("mmap");
-			exit(1);
-		}
-		// close the device (don't worry, mapping should be unaffected)
-		close(fd);
+void Mem_Dump() {
 
-		// Initialize fields of head free list
-		head->size = alignedSize;
-		head->next = NULL;
-
-		printf("Free Space: %i\n", head->size); // TEST output
-
-		puts("Mem_Init Ending."); //TEST output
-
-		// return 0 on success
-		return (0);
-	}
-
-	void *Mem_Alloc(int size) {
-
-		// Total allocated size is requestedSize + sizeof(header)
-		size_t allocSize = size + sizeof(header_t);
-		// Align size to 8 byte chunks
-		size_t alignedAllocSize = align(allocSize, 8);
-
-		return bestfitFor(alignedAllocSize);
-	}
-
-	int Mem_Free(void *ptr) {
-
-		return (0);
-	}
-
-	void Mem_Dump() {
-
-	}
+}
