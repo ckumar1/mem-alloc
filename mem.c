@@ -215,28 +215,27 @@ int Mem_Free(void *ptr) {
 	// TODO finish implementing mem_free
 
 	// Calculate ptr to Header of allocated block
-	header_t* alloc_header = (void *) ptr - sizeof(header_t);
+	header_t* alloc_header = (header_t *) (ptr - sizeof(header_t));
 
 	// size of allocated space being freed (not counting the header)
 	size_t freed_size = alloc_header->size;
 
 	// Convert allocated block into a free block
-	node_t *freed_blk = (node_t*) alloc_header;
+	node_t *freed_blk;
+	freed_blk = (node_t*) alloc_header;
+
+	// initalize free block
 	freed_blk->size = freed_size + sizeof(header_t);
 	freed_blk->next = NULL;
 	freed_blk->prev = NULL;
 
 	// Reassign pointers to add freed_blk back to the free list
-
-	// Link freed block to Head of free list
-	freed_blk->next = head;
-	// Link Head of Free list to freed_blk
-	head->prev = freed_blk;
-	// Set the Head of the free list to the newly freed block
-	head = freed_blk;
+	freed_blk->next = head; // Link freed block to Head of free list
+	head->prev = freed_blk;	// Link Head of Free list to freed_blk
+	head = freed_blk; // Set the Head of the free list to the newly freed block
 
 	// FIXME: coalesce!
-	return (0);
+	return (0);re
 }
 
 void Mem_Dump() {
