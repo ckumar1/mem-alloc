@@ -14,7 +14,7 @@ static int m_init_flag = 0;
 
 // Node of the free list
 typedef struct node_t {
-	int size;
+	size_t size;
 	struct node_t* next;
 	struct node_t* prev;
 
@@ -59,11 +59,18 @@ void split_free_node(size_t requestedSize, node_t* freeSplitNode,
 	// Split node with 8bit alignment if bestfit exists
 	// FIXME error due to requested size plus sizeof Header is greater than available heap
 	freeSplitNode = (void*) bestfit + requestedSize;
+	
+	// TODO store bestfit fields in local vars
+	// then set freeSplitNode accordingly.
+	
+
 	// Calculate the new size of the split free node
 	freeSplitNode->size = bestfit->size - requestedSize;
 	// set pointers as appropriate
 	freeSplitNode->next = bestfit->next;
 	freeSplitNode->prev = bestfit->prev;
+
+
 	if (freeSplitNode->prev) {
 		// Set previous node's next ptr to the newly split node's address
 		// FIXME throwing a segfault
@@ -103,7 +110,7 @@ void * findBestfitChunk(size_t requestedSize) {
 	} // end_FOR
 
 	if (bestfit) { // Split node with 8bit alignment if bestfit exists
-		// FIXME error due to requested size plus sizeof Header is greater than available heap
+		// FIXME error from head->prev pointer becoming corrupted
 		split_free_node(requestedSize, freeSplitNode, bestfit);
 	}
 	// return the address of the new block
