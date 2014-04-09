@@ -61,22 +61,41 @@ size_t initHeader(header_t * header, size_t allocSize) {
 void * findBestfitChunk(size_t requestedSize) {
 
 	// Store a pointer to the head of the list
-	node_t * freelistNode = head;
+	node_t * freeNode = head;
 	node_t * bestfit = NULL;
 
-	for (; freelistNode != NULL; freelistNode = freelistNode->next) {
+	for (; freeNode != NULL; freeNode = freeNode->next) {
 
-		if (bestfit != NULL) {
+		if (bestfit) {
 			// node greater than requested size and smaller (better) than current bestfit
-			if (freelistNode->size >= requestedSize
-					&& (freelistNode->size < bestfit->size))
-				bestfit = freelistNode;
-		} else if (freelistNode->size >= requestedSize)
+			if (freeNode->size >= requestedSize
+					&& (freeNode->size < bestfit->size))
+				bestfit = freeNode;
+		} else if (freeNode->size >= requestedSize)
 			// first node bigger than size is bestfit initially
-			bestfit = freelistNode;
+			bestfit = freeNode;
 
 	} // end_FOR
 
+	if (bestfit) // Split node with 8bit alignment if bestfit exists
+	
+		node_t* freeSplitNode = (node_t *) bestfit + requestedSize;
+		// Calculate the new size of the split free node
+		freeSplitNode->size = bestfit->size - requestedSize;
+		// set pointers as appropriate
+		freeSplitNode->next = bestfit->next;
+		freeSplitNode->prev = bestfit->prev;
+
+		if (freeSplitNode->prev)
+		{
+			// Set previous node's next ptr to the newly split node's address
+			freeSplitNode->prev->next = @freelistNode
+		} else { // no previous node means bestfit was the head ptr
+			// update head ptr to new split address
+			head = &freeSplitNode;
+		}
+	
+	// return the address of the new block
 	return (void*) bestfit;
 
 }
@@ -89,9 +108,9 @@ void * findBestfitChunk(size_t requestedSize) {
 void * bestfitChunk(size_t size) {
 	header_t* bestfitHeader = (header_t*) findBestfitChunk(size);
 	if (bestfitHeader)
-		// init Header set bfChunk to the start address of allocated memory
-		bestfitHeader = (void *) (bestfitHeader
-				+ initHeader(bestfitHeader, size));
+		// init Header returns size of header to convert header addr to the start address of allocated memory
+		bestfitHeader = (void *) (bestfitHeader + 
+				initHeader(bestfitHeader, size) );
 
 	return (bestfitHeader);
 }
