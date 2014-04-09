@@ -54,6 +54,27 @@ size_t initHeader(header_t * header, size_t allocSize) {
 	return sizeof(header_t);
 }
 
+void* split_free_node(size_t requestedSize, node_t* freeSplitNode,
+		node_t* bestfit) {
+	// Split node with 8bit alignment if bestfit exists
+	// FIXME error due to requested size plus sizeof Header is greater than available heap
+	freeSplitNode = (void*) bestfit + requestedSize;
+	// Calculate the new size of the split free node
+	freeSplitNode->size = bestfit->size - requestedSize;
+	// set pointers as appropriate
+	freeSplitNode->next = bestfit->next;
+	freeSplitNode->prev = bestfit->prev;
+	if (freeSplitNode->prev) {
+		// Set previous node's next ptr to the newly split node's address
+		// FIXME throwing a segfault
+		freeSplitNode->prev->next = (node_t*) freeSplitNode;
+	} else {
+		// no previous node means bestfit was the head ptr
+		// update head ptr to new split address
+		head = (node_t*) freeSplitNode;
+	}
+}
+
 // Search for free space
 /* findBestfitChunk(size_t)
  * 
@@ -81,24 +102,10 @@ void * findBestfitChunk(size_t requestedSize) {
 
 	} // end_FOR
 
-	if (bestfit) // Split node with 8bit alignment if bestfit exists
+	if (bestfit) { // Split node with 8bit alignment if bestfit exists
 		// FIXME error due to requested size plus sizeof Header is greater than available heap
-		freeSplitNode = (void *) bestfit + requestedSize;
-	// Calculate the new size of the split free node
-	freeSplitNode->size = bestfit->size - requestedSize;
-	// set pointers as appropriate
-	freeSplitNode->next = bestfit->next;
-	freeSplitNode->prev = bestfit->prev;
-
-	if (freeSplitNode->prev) {
-		// Set previous node's next ptr to the newly split node's address
-		freeSplitNode->prev->next = (node_t*) freeSplitNode;
-	} else {
-		// no previous node means bestfit was the head ptr
-		// update head ptr to new split address
-		head = (node_t*) freeSplitNode;
+		split_free_node(requestedSize, freeSplitNode, bestfit);
 	}
-
 	// return the address of the new block
 	return (void*) bestfit;
 
