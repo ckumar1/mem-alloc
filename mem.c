@@ -235,7 +235,7 @@ int Mem_Free(void *ptr) {
 	head = freed_blk; // Set the Head of the free list to the newly freed block
 
 	// FIXME: coalesce!
-	return (0);re
+	return (0);
 }
 
 void Mem_Dump() {
