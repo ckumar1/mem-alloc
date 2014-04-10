@@ -22,7 +22,7 @@ typedef struct node_t {
 
 // Header for an allocated block
 typedef struct header_t {
-	int size;
+	size_t size;
 } header_t;
 
 size_t maxHeapSize;

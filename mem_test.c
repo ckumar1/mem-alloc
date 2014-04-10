@@ -1,6 +1,7 @@
-/* a few aligned allocations and frees */
+/* a few allocations checked for alignment */
 #include <assert.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "mem.h"
 
 int main() {
@@ -9,13 +10,13 @@ int main() {
 
    ptr[0] = Mem_Alloc(8);
    ptr[1] = Mem_Alloc(16);
-   assert(Mem_Free(ptr[0]) == 0);
-   assert(Mem_Free(ptr[1]) == 0);
-
    ptr[2] = Mem_Alloc(32);
    ptr[3] = Mem_Alloc(8);
-   assert(Mem_Free(ptr[2]) == 0);
-   assert(Mem_Free(ptr[3]) == 0);
+
+   assert((uintptr_t)(ptr[0]) % 8 == 0);
+   assert((uintptr_t)(ptr[1]) % 8 == 0);
+   assert((uintptr_t)(ptr[2]) % 8 == 0);
+   assert((uintptr_t)(ptr[3]) % 8 == 0);
 
    exit(0);
 }
