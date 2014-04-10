@@ -72,14 +72,23 @@ void* split_free_block(node_t* freeBlock, size_t newBlockSize)
 	trimmedFreeBlock->next = fbNext;
 	trimmedFreeBlock->prev = fbPrev;
 
-	// CASE: free block node is not the head of free list
-	if (fbPrev) {
+
+
+	// Connect the new free node back to free list
+
+	if (fbNext) {  // N
+		// Set next nodes previous pointer to the new node
+		fbNext->prev = trimmedFreeBlock;
+	}
+
+	if (fbPrev) {  // P
 		// Set previous node's next ptr to the newly split node's address
 		// FIXME throwing a segfault
 		fbPrev->next = trimmedFreeBlock;
-	} else {	// CASE: free
+
+	} else { // P'
 		// no previous node means freeBlock was the head ptr
-		// update head ptr to new split address
+		// so head must be updated to the new address of the trimmed node
 		head = trimmedFreeBlock;
 	}
 
@@ -133,7 +142,8 @@ void * bestfitChunk(size_t totalSize)
 
 		// Splits free block and returns void ptr to allocated block (TODO +header) of size totalSize
 		header_t* bestfitHeader = split_free_block(bestfitBlock, totalSize);
-		// set bestfitBlock to point to the start of allocated memory
+
+		// Set bestfitBlock to point to the start of allocated memory
 		bestfitBlock = (void *) (bestfitHeader + sizeof(header_t));
 
 
