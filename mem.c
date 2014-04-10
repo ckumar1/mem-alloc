@@ -46,25 +46,28 @@ size_t align(size_t size, size_t alignment)
 
 
 /*
- * Splits freeBlock into a smaller freeBlock and an allocated block
- * of the requestedSize
- * returns void* to the allocated block of requestedSize
+ * Splits freeBlock into a smaller freeBlock and a new block 
+ * of size newBlockSize
+ * returns void* to the allocated block of newBlockSize
  */
-void* split_free_block(node_t* freeBlock, size_t requestedSize)
+void* split_free_block(node_t* freeBlock, size_t newBlockSize)
 {
 
 	// Store freeBlock fields in local vars
-	size_t fbSize = freeBlock->size;
+	size_t oldBlockSize = freeBlock->size;
 	node_t * fbNext = freeBlock->next;
 	node_t * fbPrev = freeBlock->prev;
 
-	// Get pointer to trimmed free block
-	node_t* trimmedFreeBlock = (void*) freeBlock + requestedSize;
-	// TODO: refactor allocHeader to hold the address of allocMem not allocHeader
-	void * allocHeader = (void*) freeBlock;
-	// Iniitalize trimmedFreeBlock
+	// TODO: refactor allocHeader to hold the address of allocated space not allocHeader
+	header_t* allocHeader = (void*) freeBlock;
+	// Initialize allocated block size to their 8bit aligned request
+	allocHeader->size = newBlockSize - sizeof(header_t);
+
+	// Set trimmedFreeBlock by adding  + the size of an allocated header
+	node_t* trimmedFreeBlock = (void*) freeBlock + sizeof(header_t) + newBlockSize;
+	// Initialize trimmedFreeBlock
 	// Calculate the new reduced size of trimmedFreeBlock
-	trimmedFreeBlock->size = fbSize - requestedSize;
+	trimmedFreeBlock->size = oldBlockSize - newBlockSize; // TODO: refactor to requestedSize
 	// Keep the same pointers
 	trimmedFreeBlock->next = fbNext;
 	trimmedFreeBlock->prev = fbPrev;
@@ -133,8 +136,7 @@ void * bestfitChunk(size_t totalSize)
 		// set bestfitBlock to point to the start of allocated memory
 		bestfitBlock = (void *) (bestfitHeader + sizeof(header_t));
 
-		// initialize Allocated block's header fields
-		bestfitHeader->size = totalSize - sizeof(header_t);
+
 	}
 
 	// return void* to allocated mem if found,
