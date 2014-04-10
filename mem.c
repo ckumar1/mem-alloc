@@ -26,13 +26,14 @@ typedef struct header_t {
 } header_t;
 
 size_t maxHeapSize;
-node_t* head; // pointer to the head of the free list
+node_t* head;  // pointer to the head of the free list
 
 /* Helper Functions */
 
 // TODO maybe needs to be fixed so 4096 doesn't allocate a new page?
 //  Should have enough space for our data structures on top of requested data
-size_t align(size_t size, size_t alignment) {
+size_t align(size_t size, size_t alignment)
+{
 	// Round up the requested size to the next highest multiple of alignment
 
 	// Note: if partialSpace==0, function still rounds up to the next page by adding 4096
@@ -48,7 +49,8 @@ size_t align(size_t size, size_t alignment) {
  * initialize header fields
  * returns the size of header
  */
-size_t initHeader(header_t * header, size_t allocSize) {
+size_t initHeader(header_t * header, size_t allocSize)
+{
 	// Initialize Header fields
 	header->size = allocSize;
 	return sizeof(header_t);
@@ -59,7 +61,8 @@ size_t initHeader(header_t * header, size_t allocSize) {
  * of the requestedSize
  * returns void* to the allocated block of requestedSize
  */
-void* split_free_block(node_t* freeBlock, size_t requestedSize) {
+void* split_free_block(node_t* freeBlock, size_t requestedSize)
+{
 
 	// Store freeBlock fields in local vars
 	size_t fbSize = freeBlock->size;
@@ -98,7 +101,8 @@ void* split_free_block(node_t* freeBlock, size_t requestedSize) {
  * Return the best node on success
  * Returns NULL on failure (no node is big enough to alloc size)
  */
-void * findBestfit(size_t requestedSize) {
+void * findBestfit(size_t requestedSize)
+{
 
 	// Store a pointer to the head of the list
 	node_t * freeNode = head;
@@ -108,15 +112,13 @@ void * findBestfit(size_t requestedSize) {
 
 		if (bestfit) {	// if bestfit is set
 			// node greater than requested size and smaller (better) than current bestfit
-			if (freeNode->size >= requestedSize
-					&& (freeNode->size < bestfit->size))
+			if (freeNode->size >= requestedSize && (freeNode->size < bestfit->size))
 				bestfit = freeNode;
-		} else if (freeNode->size >= requestedSize)	// if (bestfit==NULL)
+		} else if (freeNode->size >= requestedSize)  // if (bestfit==NULL)
 			// initialize bestfit with the first node that can fit the requestedSize
 			bestfit = freeNode;
 
-	} // end_FOR
-
+	}  // end_FOR
 
 	// if bestfit is found: return pointer to start of the free block
 	// else: return NULL
@@ -129,20 +131,21 @@ void * findBestfit(size_t requestedSize) {
  * returns a pointer to the allocated space if found;
  * returns NULL on failure
  */
-void * bestfitChunk(size_t totalSize) {
+void * bestfitChunk(size_t totalSize)
+{
 
 	// Search for an available block in free list
 	void * bestfitBlock = findBestfit(totalSize);
 
-	if (bestfitBlock) {	// CASE:  Available node found!
+	if (bestfitBlock) {  // CASE:  Available node found!
 
 		// Splits free block and returns void ptr to allocated block (TODO +header) of size totalSize
-        header_t* bestfitHeader = split_free_block(bestfitBlock, totalSize) ;
+		header_t* bestfitHeader = split_free_block(bestfitBlock, totalSize);
 		// set bestfitBlock to point to the start of allocated memory
-		bestfitBlock =  (void *) (bestfitHeader +  sizeof(header_t));
+		bestfitBlock = (void *) (bestfitHeader + sizeof(header_t));
 
 		// initialize Allocated block's header fields
-		 bestfitHeader->size = totalSize - sizeof(header_t);
+		bestfitHeader->size = totalSize - sizeof(header_t);
 	}
 
 	// return void* to allocated mem if found,
@@ -156,7 +159,8 @@ void * bestfitChunk(size_t totalSize) {
  * On Success, returns void* ptr to the start of the requested spaced
  * On Failure, returns NULL
  */
-void * bestfitFor(size_t size) {
+void * bestfitFor(size_t size)
+{
 
 	void* ptr = bestfitChunk(size);
 
@@ -166,7 +170,8 @@ void * bestfitFor(size_t size) {
 	return (ptr);
 }
 
-int Mem_Init(int sizeOfRegion) {
+int Mem_Init(int sizeOfRegion)
+{
 
 	puts("Mem_Init starts...\n");
 	printf("Requested Size: %d\n", sizeOfRegion);
@@ -183,11 +188,11 @@ int Mem_Init(int sizeOfRegion) {
 	// Make sure there is enough memory for the free list
 	maxHeapSize = sizeOfRegion;		// + sizeof(node_t);
 
-	printf("Free list Node Size: %u\n", (unsigned int) sizeof(node_t)); // TEST output
+	printf("Free list Node Size: %u\n", (unsigned int) sizeof(node_t));  // TEST output
 
 	// Align the requested heap size to the nearest page size
 	size_t alignedSize = align(maxHeapSize, getpagesize());
-	printf("Aligned Size: %u\n", (unsigned int) alignedSize); // TEST output
+	printf("Aligned Size: %u\n", (unsigned int) alignedSize);  // TEST output
 
 	// open the /dev/zero device
 	int fd = open("/dev/zero", O_RDWR);
@@ -207,15 +212,16 @@ int Mem_Init(int sizeOfRegion) {
 	head->next = NULL;
 	head->prev = NULL;
 
-	printf("Free Space: %zu\n", head->size); // TEST output
+	printf("Free Space: %zu\n", head->size);  // TEST output
 
-	puts("Mem_Init Ending."); //TEST output
+	puts("Mem_Init Ending.");  //TEST output
 
 	// return 0 on success
 	return (0);
 }
 
-void *Mem_Alloc(int size) {
+void *Mem_Alloc(int size)
+{
 
 	// Total allocated size is requestedSize + sizeof(header)
 	size_t allocSize = size + sizeof(header_t);
@@ -225,7 +231,8 @@ void *Mem_Alloc(int size) {
 	return bestfitFor(alignedAllocSize);
 }
 
-int Mem_Free(void *ptr) {
+int Mem_Free(void *ptr)
+{
 	// TODO finish implementing mem_free
 
 	// Calculate ptr to Header of allocated block
@@ -241,15 +248,16 @@ int Mem_Free(void *ptr) {
 	freed_blk->prev = NULL;
 
 	// Reassign pointers to add freed_blk back to the free list
-	freed_blk->next = head; // Link freed block to Head of free list
-	head->prev = freed_blk;	// Link Head of Free list to freed_blk
-	head = freed_blk; // Set the Head of the free list to the newly freed block
+	freed_blk->next = head;  // Link freed block to Head of free list
+	head->prev = freed_blk;  // Link Head of Free list to freed_blk
+	head = freed_blk;  // Set the Head of the free list to the newly freed block
 
 	// FIXME: coalesce!
 	return (0);
 }
 
-void Mem_Dump() {
+void Mem_Dump()
+{
 
 	// TODO implement mem_dump
 }
