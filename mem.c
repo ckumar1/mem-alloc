@@ -173,8 +173,6 @@ void * bestfitFor(size_t size)
 int Mem_Init(int sizeOfRegion)
 {
 
-	puts("Mem_Init starts...\n");
-	printf("Requested Size: %d\n", sizeOfRegion);
 
 	// check for invalid args and attempts to run multiple times
 	if (m_init_flag != 0 || sizeOfRegion <= 0) {
@@ -188,11 +186,9 @@ int Mem_Init(int sizeOfRegion)
 	// Make sure there is enough memory for the free list
 	maxHeapSize = sizeOfRegion;		// + sizeof(node_t);
 
-	printf("Free list Node Size: %u\n", (unsigned int) sizeof(node_t));  // TEST output
 
 	// Align the requested heap size to the nearest page size
 	size_t alignedSize = align(maxHeapSize, getpagesize());
-	printf("Aligned Size: %u\n", (unsigned int) alignedSize);  // TEST output
 
 	// open the /dev/zero device
 	int fd = open("/dev/zero", O_RDWR);
@@ -211,11 +207,6 @@ int Mem_Init(int sizeOfRegion)
 	head->size = alignedSize;
 	head->next = NULL;
 	head->prev = NULL;
-
-	printf("Free Space: %zu\n", head->size);  // TEST output
-
-	puts("Mem_Init Ending.");  //TEST output
-
 	// return 0 on success
 	return (0);
 }
