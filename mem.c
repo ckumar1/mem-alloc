@@ -173,8 +173,6 @@ void * bestfitFor(size_t size)
 int Mem_Init(int sizeOfRegion)
 {
 
-	puts("Mem_Init starts...\n");
-	printf("Requested Size: %d\n", sizeOfRegion);
 
 	// check for invalid args and attempts to run multiple times
 	if (m_init_flag != 0 || sizeOfRegion <= 0) {
@@ -188,11 +186,9 @@ int Mem_Init(int sizeOfRegion)
 	// Make sure there is enough memory for the free list
 	maxHeapSize = sizeOfRegion;		// + sizeof(node_t);
 
-	printf("Free list Node Size: %u\n", (unsigned int) sizeof(node_t));  // TEST output
 
 	// Align the requested heap size to the nearest page size
 	size_t alignedSize = align(maxHeapSize, getpagesize());
-	printf("Aligned Size: %u\n", (unsigned int) alignedSize);  // TEST output
 
 	// open the /dev/zero device
 	int fd = open("/dev/zero", O_RDWR);
@@ -211,11 +207,6 @@ int Mem_Init(int sizeOfRegion)
 	head->size = alignedSize;
 	head->next = NULL;
 	head->prev = NULL;
-
-	printf("Free Space: %zu\n", head->size);  // TEST output
-
-	puts("Mem_Init Ending.");  //TEST output
-
 	// return 0 on success
 	return (0);
 }
@@ -253,11 +244,44 @@ int Mem_Free(void *ptr)
 	head = freed_blk;  // Set the Head of the free list to the newly freed block
 
 	// FIXME: coalesce!
+	node_t * freelistIterator = head;
+	while (freelistIterator->next != NULL) {
+		//adding size to the pointer address to get next block
+		node_t *possibleNextFreeBlock = (node_t *) (freelistIterator + freelistIterator->size);
+		// Check if next block is neighboring block
+		if (possibleNextFreeBlock == freelistIterator->next) {
+			freelistIterator->size += possibleNextFreeBlock->size;
+			freelistIterator->next = possibleNextFreeBlock->next;
+		}
+
+		// if available, check if prev block can be coalesced
+		if (freelistIterator->prev) {
+			// subtracting size to the pointer address to get previous block
+			node_t *possiblePrevFreeBlock = (node_t *) (freelistIterator
+			        - freelistIterator->prev->size);
+			// Check if prev block is neighboring block
+			if (possiblePrevFreeBlock == freelistIterator->prev) {
+				freelistIterator->size += possiblePrevFreeBlock->size;
+				freelistIterator->prev = possiblePrevFreeBlock->prev;
+			}
+		}
+
+		// move onto next node
+		freelistIterator = freelistIterator->next;
+	}
+
 	return (0);
 }
 
 void Mem_Dump()
 {
+	// print out the entire free list
 
-	// TODO implement mem_dump
+	node_t* nextFlNode = head;
+
+	while (nextFlNode != NULL) {
+		printf("Node at: %p\n\tPrevious: %p\n\tNext: %p\n\tSize: %zu\n", nextFlNode,
+		        nextFlNode->prev, nextFlNode->next, nextFlNode->size);
+		nextFlNode = nextFlNode->next;
+	}
 }
