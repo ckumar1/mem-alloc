@@ -250,8 +250,6 @@ int Mem_Free(void *ptr)
 		node_t *possibleNextFreeBlock = (node_t *) (freelistIterator + freelistIterator->size);
 		// Check if next block is neighboring block
 		if (possibleNextFreeBlock == freelistIterator->next) {
-			freelistIterator->size += possibleNextFreeBlock->size;
-			freelistIterator->next = possibleNextFreeBlock->next;
 		}
 
 		// if available, check if prev block can be coalesced
@@ -261,8 +259,6 @@ int Mem_Free(void *ptr)
 			        - freelistIterator->prev->size);
 			// Check if prev block is neighboring block
 			if (possiblePrevFreeBlock == freelistIterator->prev) {
-				freelistIterator->size += possiblePrevFreeBlock->size;
-				freelistIterator->prev = possiblePrevFreeBlock->prev;
 			}
 		}
 
