@@ -129,14 +129,25 @@ void * findBestfit(size_t requestedSize) {
  * returns a pointer to the allocated space if found;
  * returns NULL on failure
  */
-void * bestfitChunk(size_t size) {
-	header_t* bestfitHeader = (header_t*) findBestfitChunk(size);
-	if (bestfitHeader)
-		// init Header returns size of header to convert header addr to the start address of allocated memory
-		bestfitHeader = (void *) (bestfitHeader
-				+ initHeader(bestfitHeader, size - sizeof(header_t)));
+void * bestfitChunk(size_t totalSize) {
 
-	return (bestfitHeader);
+	// Search for an available block in free list
+	void * bestfitBlock = findBestfit(totalSize);
+
+	if (bestfitBlock) {	// CASE:  Available node found!
+
+		// Splits free block and returns void ptr to allocated block (TODO +header) of size totalSize
+        header_t* bestfitHeader = split_free_block(bestfitBlock, totalSize) ;
+		// set bestfitBlock to point to the start of allocated memory
+		bestfitBlock =  (void *) (bestfitHeader +  sizeof(header_t));
+
+		// initialize Allocated block's header fields
+		 bestfitHeader->size = totalSize - sizeof(header_t);
+	}
+
+	// return void* to allocated mem if found,
+	// otherwise NULL if no Node is big enough
+	return (bestfitBlock);
 }
 
 /*
