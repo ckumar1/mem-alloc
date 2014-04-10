@@ -54,35 +54,41 @@ size_t initHeader(header_t * header, size_t allocSize) {
 	return sizeof(header_t);
 }
 
-void split_free_node(size_t requestedSize, node_t* freeSplitNode,
-		node_t* bestfit) {
-	
-	// TODO store bestfit fields in local vars
-	// then set freeSplitNode accordingly.
-	size_t bfChunkSize = bestfit->size;
-	node_t * bfNextNode = bestfit->next;
-	node_t * bfPrevNode = bestfit->prev;
-	
-	// Split node with 8bit alignment if bestfit exists
-	// FIXME bestfit is getting corrupted before we are done reading from it
-	freeSplitNode = (void*) bestfit + requestedSize;
+/*
+ * Splits freeBlock into a smaller freeBlock and an allocated block
+ * of the requestedSize
+ * returns void* to the allocated block of requestedSize
+ */
+void* split_free_block(node_t* freeBlock, size_t requestedSize) {
 
-	// Calculate the new size of the split free node
-	freeSplitNode->size = bfChunkSize - requestedSize;
-	// set pointers as appropriate
-	freeSplitNode->next = bfNextNode;
-	freeSplitNode->prev = bfPrevNode;
+	// Store freeBlock fields in local vars
+	size_t fbSize = freeBlock->size;
+	node_t * fbNext = freeBlock->next;
+	node_t * fbPrev = freeBlock->prev;
 
+	// Get pointer to trimmed free block
+	node_t* trimmedFreeBlock = (void*) freeBlock + requestedSize;
+	// TODO: refactor allocHeader to hold the address of allocMem not allocHeader
+	void * allocHeader = (void*) freeBlock;
+	// Iniitalize trimmedFreeBlock
+	// Calculate the new reduced size of trimmedFreeBlock
+	trimmedFreeBlock->size = fbSize - requestedSize;
+	// Keep the same pointers
+	trimmedFreeBlock->next = fbNext;
+	trimmedFreeBlock->prev = fbPrev;
 
-	if (freeSplitNode->prev) {
+	// CASE: free block node is not the head of free list
+	if (fbPrev) {
 		// Set previous node's next ptr to the newly split node's address
 		// FIXME throwing a segfault
-		freeSplitNode->prev->next = (node_t*) freeSplitNode;
-	} else {
-		// no previous node means bestfit was the head ptr
+		fbPrev->next = trimmedFreeBlock;
+	} else {	// CASE: free
+		// no previous node means freeBlock was the head ptr
 		// update head ptr to new split address
-		head = (node_t*) freeSplitNode;
+		head = trimmedFreeBlock;
 	}
+
+	return allocHeader;
 }
 
 // Search for free space
