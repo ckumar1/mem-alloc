@@ -44,7 +44,6 @@ size_t align(size_t size, size_t alignment)
 	return alignedSize;
 }
 
-
 /*
  * Splits freeBlock into a smaller freeBlock and a new block 
  * of size newBlockSize
@@ -67,12 +66,10 @@ void* split_free_block(node_t* freeBlock, size_t newBlockSize)
 	node_t* trimmedFreeBlock = (void*) freeBlock + sizeof(header_t) + newBlockSize;
 	// Initialize trimmedFreeBlock
 	// Calculate the new reduced size of trimmedFreeBlock
-	trimmedFreeBlock->size = oldBlockSize - newBlockSize; // TODO: refactor to requestedSize
+	trimmedFreeBlock->size = oldBlockSize - newBlockSize;  // TODO: refactor to requestedSize
 	// Keep the same pointers
 	trimmedFreeBlock->next = fbNext;
 	trimmedFreeBlock->prev = fbPrev;
-
-
 
 	// Connect the new free node back to free list
 
@@ -86,7 +83,7 @@ void* split_free_block(node_t* freeBlock, size_t newBlockSize)
 		// FIXME throwing a segfault
 		fbPrev->next = trimmedFreeBlock;
 
-	} else { // P'
+	} else {  // P'
 		// no previous node means freeBlock was the head ptr
 		// so head must be updated to the new address of the trimmed node
 		head = trimmedFreeBlock;
@@ -146,7 +143,6 @@ void * bestfitChunk(size_t totalSize)
 		// Set bestfitBlock to point to the start of allocated memory
 		bestfitBlock = (void *) (bestfitHeader + sizeof(header_t));
 
-
 	}
 
 	// return void* to allocated mem if found,
@@ -174,7 +170,6 @@ void * bestfitFor(size_t size)
 int Mem_Init(int sizeOfRegion)
 {
 
-
 	// check for invalid args and attempts to run multiple times
 	if (m_init_flag != 0 || sizeOfRegion <= 0) {
 		m_error = E_BAD_ARGS;
@@ -186,7 +181,6 @@ int Mem_Init(int sizeOfRegion)
 
 	// Make sure there is enough memory for the free list
 	maxHeapSize = sizeOfRegion;		// + sizeof(node_t);
-
 
 	// Align the requested heap size to the nearest page size
 	size_t alignedSize = align(maxHeapSize, getpagesize());
@@ -251,8 +245,8 @@ int Mem_Free(void *ptr)
 		node_t *possibleNextFreeBlock = (node_t *) (freelistIterator + freelistIterator->size);
 		// Check if next block is neighboring block
 		if (possibleNextFreeBlock == freelistIterator->next) {
-//			freelistIterator->size += possibleNextFreeBlock->size;
-//			freelistIterator->next = possibleNextFreeBlock->next;
+			//			freelistIterator->size += possibleNextFreeBlock->size;
+			//			freelistIterator->next = possibleNextFreeBlock->next;
 		}
 
 		// if available, check if prev block can be coalesced
@@ -262,8 +256,8 @@ int Mem_Free(void *ptr)
 			        - freelistIterator->prev->size);
 			// Check if prev block is neighboring block
 			if (possiblePrevFreeBlock == freelistIterator->prev) {
-//				freelistIterator->size += possiblePrevFreeBlock->size;
-//				freelistIterator->prev = possiblePrevFreeBlock->prev;
+				//				freelistIterator->size += possiblePrevFreeBlock->size;
+				//				freelistIterator->prev = possiblePrevFreeBlock->prev;
 			}
 		}
 
