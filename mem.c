@@ -284,6 +284,13 @@ int Mem_Free(void *ptr)
 
 void Mem_Dump()
 {
+	// print out the entire free list
 
-	// TODO implement mem_dump
+	node_t* nextFlNode = head;
+
+	while (nextFlNode != NULL) {
+		printf("Node at: %p\n\tPrevious: %p\n\tNext: %p\n\tSize: %zu\n", nextFlNode,
+		        nextFlNode->prev, nextFlNode->next, nextFlNode->size);
+		nextFlNode = nextFlNode->next;
+	}
 }
