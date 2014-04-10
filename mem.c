@@ -44,17 +44,6 @@ size_t align(size_t size, size_t alignment)
 	return alignedSize;
 }
 
-/* initHeader(header_t *, size_t)
- *
- * initialize header fields
- * returns the size of header
- */
-size_t initHeader(header_t * header, size_t allocSize)
-{
-	// Initialize Header fields
-	header->size = allocSize;
-	return sizeof(header_t);
-}
 
 /*
  * Splits freeBlock into a smaller freeBlock and an allocated block
