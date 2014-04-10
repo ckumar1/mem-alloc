@@ -253,6 +253,32 @@ int Mem_Free(void *ptr)
 	head = freed_blk;  // Set the Head of the free list to the newly freed block
 
 	// FIXME: coalesce!
+	node_t * freelistIterator = head;
+	while (freelistIterator->next != NULL) {
+		//adding size to the pointer address to get next block
+		node_t *possibleNextFreeBlock = (node_t *) (freelistIterator + freelistIterator->size);
+		// Check if next block is neighboring block
+		if (possibleNextFreeBlock == freelistIterator->next) {
+			freelistIterator->size += possibleNextFreeBlock->size;
+			freelistIterator->next = possibleNextFreeBlock->next;
+		}
+
+		// if available, check if prev block can be coalesced
+		if (freelistIterator->prev) {
+			// subtracting size to the pointer address to get previous block
+			node_t *possiblePrevFreeBlock = (node_t *) (freelistIterator
+			        - freelistIterator->prev->size);
+			// Check if prev block is neighboring block
+			if (possiblePrevFreeBlock == freelistIterator->prev) {
+				freelistIterator->size += possiblePrevFreeBlock->size;
+				freelistIterator->prev = possiblePrevFreeBlock->prev;
+			}
+		}
+
+		// move onto next node
+		freelistIterator = freelistIterator->next;
+	}
+
 	return (0);
 }
 
