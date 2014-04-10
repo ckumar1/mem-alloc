@@ -98,31 +98,28 @@ void* split_free_block(node_t* freeBlock, size_t requestedSize) {
  * Return the best node on success
  * Returns NULL on failure (no node is big enough to alloc size)
  */
-void * findBestfitChunk(size_t requestedSize) {
+void * findBestfit(size_t requestedSize) {
 
 	// Store a pointer to the head of the list
 	node_t * freeNode = head;
 	node_t * bestfit = NULL;
-	node_t* freeSplitNode = NULL;
 
 	for (; freeNode != NULL; freeNode = freeNode->next) {
 
-		if (bestfit) {
+		if (bestfit) {	// if bestfit is set
 			// node greater than requested size and smaller (better) than current bestfit
 			if (freeNode->size >= requestedSize
 					&& (freeNode->size < bestfit->size))
 				bestfit = freeNode;
-		} else if (freeNode->size >= requestedSize)
-			// first node bigger than size is bestfit initially
+		} else if (freeNode->size >= requestedSize)	// if (bestfit==NULL)
+			// initialize bestfit with the first node that can fit the requestedSize
 			bestfit = freeNode;
 
 	} // end_FOR
 
-	if (bestfit) { // Split node with 8bit alignment if bestfit exists
-		// FIXME error from head->prev pointer becoming corrupted
-		split_free_node(requestedSize, freeSplitNode, bestfit);
-	}
-	// return the address of the new block
+
+	// if bestfit is found: return pointer to start of the free block
+	// else: return NULL
 	return (void*) bestfit;
 
 }
