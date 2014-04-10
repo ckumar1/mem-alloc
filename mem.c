@@ -1,4 +1,4 @@
-git #include "mem.h"
+#include "mem.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -244,6 +244,28 @@ int Mem_Free(void *ptr)
 	head = freed_blk;  // Set the Head of the free list to the newly freed block
 
 	// FIXME: coalesce!
+	node_t * freelistIterator = head;
+	while (freelistIterator->next != NULL) {
+		//adding size to the pointer address to get next block
+		node_t *possibleNextFreeBlock = (node_t *) (freelistIterator + freelistIterator->size);
+		// Check if next block is neighboring block
+		if (possibleNextFreeBlock == freelistIterator->next) {
+		}
+
+		// if available, check if prev block can be coalesced
+		if (freelistIterator->prev) {
+			// subtracting size to the pointer address to get previous block
+			node_t *possiblePrevFreeBlock = (node_t *) (freelistIterator
+			        - freelistIterator->prev->size);
+			// Check if prev block is neighboring block
+			if (possiblePrevFreeBlock == freelistIterator->prev) {
+			}
+		}
+
+		// move onto next node
+		freelistIterator = freelistIterator->next;
+	}
+
 	return (0);
 }
 
